@@ -1,1 +1,186 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Sweet Shop</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sweet Shop Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff6b6b;
+    }
+
+    .login, .add-sweet {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 15px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button:disabled {
+      background: #ccc;
+    }
+
+    .sweet-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+
+    .sweet-card strong {
+      font-size: 16px;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>🍬 Sweet Shop Management</h1>
+
+    <!-- LOGIN SECTION -->
+    <div class="login">
+      <h2>Login</h2>
+      <input id="username" placeholder="Username" />
+      <input id="password" type="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <p class="error" id="loginError"></p>
+    </div>
+
+    <!-- SWEETS LIST -->
+    <h2>Available Sweets</h2>
+    <div id="sweets"></div>
+
+    <!-- ADD SWEET (ADMIN) -->
+    <div class="add-sweet">
+      <h3>Add Sweet (Admin)</h3>
+      <input id="name" placeholder="Name" />
+      <input id="category" placeholder="Category" />
+      <input id="price" type="number" placeholder="Price" />
+      <input id="quantity" type="number" placeholder="Quantity" />
+      <button onclick="addSweet()">Add Sweet</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:8080/api";
+    let token = "";
+
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch(API_URL + "/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        token = data.token;
+        document.getElementById("loginError").innerText = "";
+        loadSweets();
+      } catch {
+        document.getElementById("loginError").innerText = "Login failed";
+      }
+    }
+
+    async function loadSweets() {
+      const res = await fetch(API_URL + "/sweets", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+
+      const sweets = await res.json();
+      const container = document.getElementById("sweets");
+      container.innerHTML = "";
+
+      sweets.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "sweet-card";
+
+        div.innerHTML = `
+          <div>
+            <strong>${s.name}</strong> (${s.category}) <br/>
+            Price: ₹${s.price} | Stock: ${s.quantity}
+          </div>
+          <button ${s.quantity < 1 ? "disabled" : ""} onclick="purchase('${s.id}')">
+            Purchase
+          </button>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    async function purchase(id) {
+      await fetch(API_URL + "/sweets/" + id + "/purchase", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token }
+      });
+      loadSweets();
+    }
+
+    async function addSweet() {
+      const sweet = {
+        name: document.getElementById("name").value,
+        category: document.getElementById("category").value,
+        price: document.getElementById("price").value,
+        quantity: document.getElementById("quantity").value
+      };
+
+      await fetch(API_URL + "/sweets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(sweet)
+      });
+
+      loadSweets();
+    }
+  </script>
+
+</body>
+</html>
