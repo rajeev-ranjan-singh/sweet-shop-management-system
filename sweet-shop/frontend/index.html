@@ -1,186 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Sweet Shop Management System</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Rasoora Sweet Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-    }
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+}
 
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+/* NAVBAR */
+nav {
+    background: #8e44ad;
+    color: white;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-    h1 {
-      text-align: center;
-      color: #ff6b6b;
-    }
+nav button {
+    background: white;
+    color: #8e44ad;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+}
 
-    .login, .add-sweet {
-      margin-bottom: 20px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 20px;
-    }
+/* HERO */
+.hero {
+    background: linear-gradient(to right, #8e44ad, #b97ddb);
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      box-sizing: border-box;
-    }
+/* MAIN */
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 10px;
+}
 
-    button {
-      padding: 10px 15px;
-      background: #ff6b6b;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-    }
+/* SWEETS GRID */
+.sweets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
 
-    button:disabled {
-      background: #ccc;
-    }
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
 
-    .sweet-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-    }
+.card h3 {
+    margin: 5px 0;
+}
 
-    .sweet-card strong {
-      font-size: 16px;
-    }
+.card p {
+    margin: 5px 0;
+    color: #555;
+}
 
-    .error {
-      color: red;
-    }
-  </style>
+.card button {
+    width: 100%;
+    background: #8e44ad;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* CART */
+.cart {
+    background: white;
+    padding: 15px;
+    margin-top: 30px;
+    border-radius: 6px;
+}
+
+.cart h3 {
+    margin-top: 0;
+}
+
+/* AUTH MODAL */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-box {
+    background: white;
+    padding: 20px;
+    width: 320px;
+    border-radius: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.hidden {
+    display: none;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="container">
-    <h1>🍬 Sweet Shop Management</h1>
+<!-- NAV -->
+<nav>
+    <h2>🍬 Rasoora Sweet Shop</h2>
+    <button id="authBtn" onclick="openLogin()">Login / Signup</button>
+</nav>
 
-    <!-- LOGIN SECTION -->
-    <div class="login">
-      <h2>Login</h2>
-      <input id="username" placeholder="Username" />
-      <input id="password" type="password" placeholder="Password" />
-      <button onclick="login()">Login</button>
-      <p class="error" id="loginError"></p>
+<!-- HERO -->
+<div class="hero">
+    <h1>Traditional Indian Sweets</h1>
+    <p>Fresh • Hygienic • Home Delivery</p>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+    <!-- SWEETS -->
+    <h2>Our Sweets</h2>
+    <div class="sweets" id="sweetList"></div>
+
+    <!-- CART -->
+    <div class="cart">
+        <h3>Your Cart</h3>
+        <ul id="cartItems"></ul>
+        <h4>Total: ₹<span id="total">0</span></h4>
+        <button onclick="checkout()">Checkout</button>
     </div>
+</div>
 
-    <!-- SWEETS LIST -->
-    <h2>Available Sweets</h2>
-    <div id="sweets"></div>
-
-    <!-- ADD SWEET (ADMIN) -->
-    <div class="add-sweet">
-      <h3>Add Sweet (Admin)</h3>
-      <input id="name" placeholder="Name" />
-      <input id="category" placeholder="Category" />
-      <input id="price" type="number" placeholder="Price" />
-      <input id="quantity" type="number" placeholder="Quantity" />
-      <button onclick="addSweet()">Add Sweet</button>
+<!-- LOGIN / SIGNUP -->
+<div class="modal" id="authModal">
+    <div class="modal-box">
+        <h3>Login</h3>
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <hr>
+        <h4>New User?</h4>
+        <button onclick="signup()">Signup</button>
+        <button onclick="closeModal()">Close</button>
     </div>
-  </div>
+</div>
 
-  <script>
-    const API_URL = "http://localhost:8080/api";
-    let token = "";
+<script>
+const sweets = [
+    {id:1, name:"Rasgulla", price:180, kcal:150},
+    {id:2, name:"Gulab Jamun", price:220, kcal:175},
+    {id:3, name:"Kaju Katli", price:850, kcal:210},
+    {id:4, name:"Ladoo", price:300, kcal:190},
+    {id:5, name:"Barfi", price:420, kcal:200},
+    {id:6, name:"Jalebi", price:260, kcal:230}
+];
 
-    async function login() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+let cart = [];
+let token = localStorage.getItem("token");
 
-      try {
-        const res = await fetch(API_URL + "/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
+/* LOAD SWEETS */
+const sweetList = document.getElementById("sweetList");
+sweets.forEach(s => {
+    sweetList.innerHTML += `
+        <div class="card">
+            <h3>${s.name}</h3>
+            <p>Price: ₹${s.price}/kg</p>
+            <p>Calories: ${s.kcal} kcal</p>
+            <button onclick="addToCart(${s.id})">Add to Cart</button>
+        </div>
+    `;
+});
 
-        const data = await res.json();
-        token = data.token;
-        document.getElementById("loginError").innerText = "";
-        loadSweets();
-      } catch {
-        document.getElementById("loginError").innerText = "Login failed";
-      }
+/* CART */
+function addToCart(id) {
+    const item = sweets.find(s => s.id === id);
+    cart.push(item);
+    renderCart();
+}
+
+function renderCart() {
+    cartItems.innerHTML = "";
+    let total = 0;
+    cart.forEach(i => {
+        total += i.price;
+        cartItems.innerHTML += `<li>${i.name} - ₹${i.price}</li>`;
+    });
+    document.getElementById("total").innerText = total;
+}
+
+/* AUTH */
+function openLogin() {
+    document.getElementById("authModal").style.display = "flex";
+}
+
+function closeModal() {
+    authModal.style.display = "none";
+}
+
+function login() {
+    token = "dummy-jwt-token";
+    localStorage.setItem("token", token);
+    authBtn.innerText = "Logout";
+    authBtn.onclick = logout;
+    closeModal();
+}
+
+function signup() {
+    alert("Signup successful. Please login.");
+}
+
+function logout() {
+    localStorage.clear();
+    location.reload();
+}
+
+/* CHECKOUT */
+function checkout() {
+    if (!token) {
+        alert("Please login to place order");
+        return;
     }
-
-    async function loadSweets() {
-      const res = await fetch(API_URL + "/sweets", {
-        headers: { "Authorization": "Bearer " + token }
-      });
-
-      const sweets = await res.json();
-      const container = document.getElementById("sweets");
-      container.innerHTML = "";
-
-      sweets.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "sweet-card";
-
-        div.innerHTML = `
-          <div>
-            <strong>${s.name}</strong> (${s.category}) <br/>
-            Price: ₹${s.price} | Stock: ${s.quantity}
-          </div>
-          <button ${s.quantity < 1 ? "disabled" : ""} onclick="purchase('${s.id}')">
-            Purchase
-          </button>
-        `;
-
-        container.appendChild(div);
-      });
-    }
-
-    async function purchase(id) {
-      await fetch(API_URL + "/sweets/" + id + "/purchase", {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + token }
-      });
-      loadSweets();
-    }
-
-    async function addSweet() {
-      const sweet = {
-        name: document.getElementById("name").value,
-        category: document.getElementById("category").value,
-        price: document.getElementById("price").value,
-        quantity: document.getElementById("quantity").value
-      };
-
-      await fetch(API_URL + "/sweets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify(sweet)
-      });
-
-      loadSweets();
-    }
-  </script>
+    alert("Order placed successfully!");
+    cart = [];
+    renderCart();
+}
+</script>
 
 </body>
 </html>
